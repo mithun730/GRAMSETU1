@@ -1,10 +1,18 @@
-export type UserRole = 'villager' | 'authority' | 'admin';
+export type UserRole = 'villager' | 'authority' | 'admin' | 'panchayat_authority' | 'administrator';
 export type FundStatus = 'sanctioned' | 'received' | 'partially_utilized' | 'fully_utilized';
 export type ProjectStatus = 'proposed' | 'approved' | 'in_progress' | 'completed' | 'on_hold' | 'cancelled';
 export type ComplaintStatus = 'pending' | 'under_review' | 'assigned' | 'in_progress' | 'resolved' | 'rejected';
 export type ComplaintPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type QuestionStatus = 'submitted' | 'under_review' | 'answered' | 'closed';
 export type ExpenditureStatus = 'pending_approval' | 'approved' | 'rejected';
+
+export interface SystemRole {
+  id: string;
+  role_key: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
 
 export interface Panchayat {
   id: string;

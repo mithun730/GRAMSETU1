@@ -101,6 +101,7 @@ export interface ConnectionTestResult {
   tablesStatus: {
     panchayats: boolean;
     profiles: boolean;
+    roles: boolean;
     funds: boolean;
     projects: boolean;
     expenditures: boolean;
@@ -108,6 +109,8 @@ export interface ConnectionTestResult {
     questions: boolean;
     documents: boolean;
     announcements: boolean;
+    notifications: boolean;
+    audit_logs: boolean;
   };
 }
 
@@ -121,6 +124,7 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
       tablesStatus: {
         panchayats: false,
         profiles: false,
+        roles: false,
         funds: false,
         projects: false,
         expenditures: false,
@@ -128,6 +132,8 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
         questions: false,
         documents: false,
         announcements: false,
+        notifications: false,
+        audit_logs: false,
       }
     };
   }
@@ -139,6 +145,7 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
     tablesStatus: {
       panchayats: false,
       profiles: false,
+      roles: false,
       funds: false,
       projects: false,
       expenditures: false,
@@ -146,6 +153,8 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
       questions: false,
       documents: false,
       announcements: false,
+      notifications: false,
+      audit_logs: false,
     }
   };
 
@@ -165,6 +174,7 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
     // 2. Check remaining tables in parallel
     const checks = await Promise.allSettled([
       client.from('profiles').select('id').limit(1),
+      client.from('roles').select('id').limit(1),
       client.from('funds').select('id').limit(1),
       client.from('projects').select('id').limit(1),
       client.from('expenditures').select('id').limit(1),
@@ -172,16 +182,21 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
       client.from('questions').select('id').limit(1),
       client.from('documents').select('id').limit(1),
       client.from('announcements').select('id').limit(1),
+      client.from('notifications').select('id').limit(1),
+      client.from('audit_logs').select('id').limit(1),
     ]);
 
     result.tablesStatus.profiles = checks[0].status === 'fulfilled' && !checks[0].value.error;
-    result.tablesStatus.funds = checks[1].status === 'fulfilled' && !checks[1].value.error;
-    result.tablesStatus.projects = checks[2].status === 'fulfilled' && !checks[2].value.error;
-    result.tablesStatus.expenditures = checks[3].status === 'fulfilled' && !checks[3].value.error;
-    result.tablesStatus.complaints = checks[4].status === 'fulfilled' && !checks[4].value.error;
-    result.tablesStatus.questions = checks[5].status === 'fulfilled' && !checks[5].value.error;
-    result.tablesStatus.documents = checks[6].status === 'fulfilled' && !checks[6].value.error;
-    result.tablesStatus.announcements = checks[7].status === 'fulfilled' && !checks[7].value.error;
+    result.tablesStatus.roles = checks[1].status === 'fulfilled' && !checks[1].value.error;
+    result.tablesStatus.funds = checks[2].status === 'fulfilled' && !checks[2].value.error;
+    result.tablesStatus.projects = checks[3].status === 'fulfilled' && !checks[3].value.error;
+    result.tablesStatus.expenditures = checks[4].status === 'fulfilled' && !checks[4].value.error;
+    result.tablesStatus.complaints = checks[5].status === 'fulfilled' && !checks[5].value.error;
+    result.tablesStatus.questions = checks[6].status === 'fulfilled' && !checks[6].value.error;
+    result.tablesStatus.documents = checks[7].status === 'fulfilled' && !checks[7].value.error;
+    result.tablesStatus.announcements = checks[8].status === 'fulfilled' && !checks[8].value.error;
+    result.tablesStatus.notifications = checks[9].status === 'fulfilled' && !checks[9].value.error;
+    result.tablesStatus.audit_logs = checks[10].status === 'fulfilled' && !checks[10].value.error;
 
     if (result.tablesStatus.panchayats) {
       result.message = 'Supabase successfully connected and PostgreSQL schema verified.';

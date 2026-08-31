@@ -36,6 +36,7 @@ export const DiagnosticsAdminTab: React.FC = () => {
 
       // 2. Test each table
       const tableNames = [
+        'roles',
         'panchayats',
         'profiles',
         'funds',
