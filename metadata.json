@@ -1,0 +1,6 @@
+{
+  "name": "Gram Setu",
+  "description": "Production-ready digital governance bridge between Gram Panchayats and citizens with real Supabase authentication, fund tracking, project monitoring, expenditure transparency, and grievance workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
