@@ -24,8 +24,8 @@ export function getActiveSupabaseConfig(): SupabaseConfig {
 
   // 2. Check environment variables
   const metaEnv = (import.meta as any).env || {};
-  const envUrl = metaEnv.VITE_SUPABASE_URL;
-  const envKey = metaEnv.VITE_SUPABASE_ANON_KEY;
+  const envUrl = metaEnv.VITE_SUPABASE_URL || 'https://ycgsoalgbhgulidygzap.supabase.co';
+  const envKey = metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY || metaEnv.VITE_SUPABASE_ANON_KEY || 'sb_publishable_MKE2O8SwG0j4bgLbPa8vnQ_lAN6OO43';
 
   if (envUrl && envKey && !envUrl.includes('your-project-ref') && envUrl.startsWith('http')) {
     return {
