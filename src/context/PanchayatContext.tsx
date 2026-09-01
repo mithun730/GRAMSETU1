@@ -4,25 +4,25 @@ import { PanchayatStats } from '../types';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
-// Default initial Sriramnagar Panchayat fallback representation
+// Default initial Gram Panchayat fallback representation without hardcoded figures
 const DEFAULT_PANCHO: Panchayat = {
   id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  name: 'Sriramnagar Gram Panchayat',
-  name_te: 'శ్రీరాంనగర్ గ్రామ పంచాయతీ',
-  mandal: 'Mallial Mandal',
-  district: 'Jagityal',
+  name: 'Gram Panchayat Portal',
+  name_te: 'గ్రామ పంచాయతీ పోర్టల్',
+  mandal: '—',
+  district: '—',
   state: 'Telangana',
   country: 'India',
-  pin_code: '505531',
-  lgd_code: '208492',
-  sarpanch_name: 'K. Anjaiah (సర్పంచ్)',
-  sarpanch_phone: '+91 94401 23456',
-  secretary_name: 'M. Srinivas (పంచాయతీ కార్యదర్శి)',
-  secretary_phone: '+91 98480 76543',
-  office_address: 'Gram Panchayat Office, Main Road, Sriramnagar Village, Jagityal Dist, Telangana 505531',
-  contact_email: 'sriramnagar.gp.jagityal@telangana.gov.in',
-  population: 4250,
-  total_wards: 12,
+  pin_code: '—',
+  lgd_code: undefined,
+  sarpanch_name: undefined,
+  sarpanch_phone: undefined,
+  secretary_name: undefined,
+  secretary_phone: undefined,
+  office_address: undefined,
+  contact_email: undefined,
+  population: 0,
+  total_wards: 0,
   is_active: true,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -54,18 +54,20 @@ export const PanchayatProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [stats, setStats] = useState<PanchayatStats>({
-    totalFundsSanctioned: 4640000,
-    totalFundsReceived: 4440000,
-    totalExpenditure: 990000,
-    remainingBalance: 3450000,
-    totalProjects: 4,
-    activeProjects: 3,
-    completedProjects: 1,
+    totalFundsSanctioned: null,
+    totalFundsReceived: null,
+    totalExpenditure: null,
+    remainingBalance: null,
+    totalProjects: null,
+    activeProjects: null,
+    completedProjects: null,
     totalComplaints: 0,
     resolvedComplaints: 0,
     pendingComplaints: 0,
     totalQuestions: 0,
     answeredQuestions: 0,
+    hasFinancialData: false,
+    hasProjectData: false,
   });
 
   const fetchPanchayatData = useCallback(async () => {
@@ -121,7 +123,9 @@ export const PanchayatProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       let totalSanctioned = 0;
       let totalReceived = 0;
-      if (fundsRes.status === 'fulfilled' && fundsRes.value.data) {
+      let hasFunds = false;
+      if (fundsRes.status === 'fulfilled' && fundsRes.value.data && fundsRes.value.data.length > 0) {
+        hasFunds = true;
         fundsRes.value.data.forEach((f: any) => {
           totalSanctioned += Number(f.sanctioned_amount || 0);
           totalReceived += Number(f.received_amount || 0);
@@ -129,7 +133,9 @@ export const PanchayatProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
 
       let totalExp = 0;
-      if (expRes.status === 'fulfilled' && expRes.value.data) {
+      let hasExp = false;
+      if (expRes.status === 'fulfilled' && expRes.value.data && expRes.value.data.length > 0) {
+        hasExp = true;
         expRes.value.data.forEach((e: any) => {
           if (e.approval_status !== 'rejected') {
             totalExp += Number(e.amount || 0);
@@ -140,7 +146,9 @@ export const PanchayatProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       let totProjects = 0;
       let actProjects = 0;
       let compProjects = 0;
-      if (projectsRes.status === 'fulfilled' && projectsRes.value.data) {
+      let hasProjects = false;
+      if (projectsRes.status === 'fulfilled' && projectsRes.value.data && projectsRes.value.data.length > 0) {
+        hasProjects = true;
         totProjects = projectsRes.value.data.length;
         actProjects = projectsRes.value.data.filter((p: any) => p.status === 'in_progress' || p.status === 'approved').length;
         compProjects = projectsRes.value.data.filter((p: any) => p.status === 'completed').length;
@@ -162,23 +170,24 @@ export const PanchayatProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ansQuestions = questionsRes.value.data.filter((q: any) => q.status === 'answered').length;
       }
 
-      // If database has records, use actual sums
-      if (totalSanctioned > 0 || totalExp > 0 || totProjects > 0 || totComplaints > 0) {
-        setStats({
-          totalFundsSanctioned: totalSanctioned,
-          totalFundsReceived: totalReceived,
-          totalExpenditure: totalExp,
-          remainingBalance: Math.max(0, totalReceived - totalExp),
-          totalProjects: totProjects,
-          activeProjects: actProjects,
-          completedProjects: compProjects,
-          totalComplaints: totComplaints,
-          resolvedComplaints: resComplaints,
-          pendingComplaints: pendComplaints,
-          totalQuestions: totQuestions,
-          answeredQuestions: ansQuestions,
-        });
-      }
+      const hasFinancialData = hasFunds || hasExp;
+
+      setStats({
+        totalFundsSanctioned: hasFinancialData ? totalSanctioned : null,
+        totalFundsReceived: hasFinancialData ? totalReceived : null,
+        totalExpenditure: hasFinancialData ? totalExp : null,
+        remainingBalance: hasFinancialData ? Math.max(0, totalReceived - totalExp) : null,
+        totalProjects: hasProjects ? totProjects : null,
+        activeProjects: hasProjects ? actProjects : null,
+        completedProjects: hasProjects ? compProjects : null,
+        totalComplaints: totComplaints,
+        resolvedComplaints: resComplaints,
+        pendingComplaints: pendComplaints,
+        totalQuestions: totQuestions,
+        answeredQuestions: ansQuestions,
+        hasFinancialData,
+        hasProjectData: hasProjects,
+      });
     } catch (err) {
       console.warn('Error fetching Panchayat metrics from Supabase:', err);
     } finally {

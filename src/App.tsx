@@ -28,6 +28,7 @@ import { ManageAnnouncementsTab } from './views/authority/ManageAnnouncementsTab
 import { UploadDocumentsTab } from './views/authority/UploadDocumentsTab';
 
 // Administrator Portal Views
+import { DataImportAdminTab } from './views/admin/DataImportAdminTab';
 import { UsersAdminTab } from './views/admin/UsersAdminTab';
 import { PanchayatAdminTab } from './views/admin/PanchayatAdminTab';
 import { AuditAdminTab } from './views/admin/AuditAdminTab';
@@ -62,7 +63,7 @@ const MainApp: React.FC = () => {
   // Sub-tabs
   const [villagerTab, setVillagerTab] = useState<VillagerTab>('overview');
   const [authorityTab, setAuthorityTab] = useState<AuthorityTab>('overview');
-  const [adminTab, setAdminTab] = useState<AdminTab>('users');
+  const [adminTab, setAdminTab] = useState<AdminTab>('data_import');
 
   // If visiting /signin page directly
   if (currentPath === '/signin') {
@@ -165,6 +166,7 @@ const MainApp: React.FC = () => {
         {/* ADMINISTRATOR PORTAL VIEWS */}
         {activeRoleView === 'admin' && (
           <div>
+            {adminTab === 'data_import' && <DataImportAdminTab />}
             {adminTab === 'users' && <UsersAdminTab />}
             {adminTab === 'panchayat' && <PanchayatAdminTab />}
             {adminTab === 'audit' && <AuditAdminTab />}

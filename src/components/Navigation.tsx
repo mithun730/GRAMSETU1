@@ -12,7 +12,9 @@ import {
   Building, 
   ShieldCheck, 
   Activity,
-  UserCheck
+  UserCheck,
+  UploadCloud,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -64,6 +66,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   ];
 
   const adminTabs: { id: AdminTab; label: string; icon: React.FC<{ className?: string }> }[] = [
+    { id: 'data_import', label: language === 'te' ? 'పంచాయతీ డేటా అప్‌లోడ్ & నిర్వహణ' : 'Upload & Manage Data', icon: UploadCloud },
     { id: 'users', label: language === 'te' ? 'వినియోగదారుల పాత్రల నిర్వహణ' : 'Users & Access Control', icon: Users },
     { id: 'panchayat', label: language === 'te' ? 'పంచాయతీ వివరాల కాన్ఫిగరేషన్' : 'Panchayat Settings', icon: Building },
     { id: 'audit', label: language === 'te' ? 'భద్రతా & ఆడిట్ లాగ్స్' : 'Security Audit Trails', icon: ShieldCheck },

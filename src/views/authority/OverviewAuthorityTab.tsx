@@ -28,7 +28,10 @@ export const OverviewAuthorityTab: React.FC<OverviewAuthorityTabProps> = ({ onNa
   const { panchayat, stats, complaints, questions } = usePanchayat();
   const { profile } = useAuth();
 
-  const formatCurrency = (val: number) => {
+  const formatCurrency = (val: number | null | undefined) => {
+    if (val === null || val === undefined) {
+      return '—';
+    }
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -128,7 +131,7 @@ export const OverviewAuthorityTab: React.FC<OverviewAuthorityTabProps> = ({ onNa
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 tracking-tight">
-            {stats.activeProjects}
+            {stats.activeProjects !== null ? stats.activeProjects : '—'}
           </p>
           <div className="text-[10px] text-slate-500 flex items-center gap-1">
             <span>In progress or approved</span>
@@ -146,7 +149,7 @@ export const OverviewAuthorityTab: React.FC<OverviewAuthorityTabProps> = ({ onNa
             </div>
           </div>
           <p className="text-2xl font-bold text-emerald-700 tracking-tight">
-            {formatCurrency(stats.remainingBalance)}
+            {stats.remainingBalance !== null ? formatCurrency(stats.remainingBalance) : '—'}
           </p>
           <div className="text-[10px] text-slate-500 flex items-center gap-1">
             <span>Unutilized funds balance</span>

@@ -28,13 +28,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
   const { t, language } = useLanguage();
   const { panchayat, stats, announcements } = usePanchayat();
 
-  const formatCurrency = (val: number) => {
+  const formatCurrency = (val: number | null | undefined) => {
+    if (val === null || val === undefined) {
+      return '—';
+    }
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0,
     }).format(val);
   };
+
+  const hasFinancialData = stats.hasFinancialData;
 
   return (
     <div className="space-y-6">
@@ -44,10 +49,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
         <div className="relative z-10 max-w-3xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-bold tracking-wider uppercase">
             <Sparkles className="w-3.5 h-3.5" />
-            {language === 'te' ? 'ఆదర్శ డిజిటల్ గ్రామ పంచాయతీ' : 'Model Digital Gram Panchayat'}
+            {language === 'te' ? 'డిజిటల్ గ్రామ పంచాయతీ పోర్టల్' : 'Digital Gram Panchayat Portal'}
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            {language === 'te' && panchayat.name_te ? panchayat.name_te : panchayat.name}
+            {language === 'te' && panchayat.name_te ? panchayat.name_te : panchayat.name || 'Gram Panchayat'}
           </h2>
           <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
             {language === 'te'
@@ -58,11 +63,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
           <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-slate-300">
             <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl">
               <MapPin className="w-4 h-4 text-emerald-400" />
-              <span>{panchayat.mandal}, {panchayat.district} Dist, {panchayat.state}</span>
+              <span>
+                {panchayat.mandal && panchayat.mandal !== '—' ? `${panchayat.mandal}, ` : ''}
+                {panchayat.district && panchayat.district !== '—' ? `${panchayat.district} Dist, ` : ''}
+                {panchayat.state || 'Telangana'}
+              </span>
             </div>
             <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl">
               <User className="w-4 h-4 text-emerald-400" />
-              <span>{panchayat.total_wards || 12} Wards &bull; Pop: {panchayat.population?.toLocaleString() || '4,250'}</span>
+              <span>
+                {panchayat.total_wards ? `${panchayat.total_wards} Wards` : 'Wards: Not configured'} 
+                &bull; 
+                Pop: {panchayat.population ? panchayat.population.toLocaleString() : 'Not available'}
+              </span>
             </div>
           </div>
         </div>
@@ -79,11 +92,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 tracking-tight">
-            {formatCurrency(stats.totalFundsSanctioned)}
+            {hasFinancialData && stats.totalFundsSanctioned !== null ? formatCurrency(stats.totalFundsSanctioned) : '—'}
           </p>
           <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>Central & State Grants</span>
+            <span>{hasFinancialData ? 'Central & State Grants' : 'No grants uploaded'}</span>
           </div>
         </div>
 
@@ -95,10 +108,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 tracking-tight">
-            {formatCurrency(stats.totalFundsReceived)}
+            {hasFinancialData && stats.totalFundsReceived !== null ? formatCurrency(stats.totalFundsReceived) : '—'}
           </p>
           <div className="text-[10px] text-slate-500 font-medium">
-            Credited to GP Bank Account
+            {hasFinancialData ? 'Credited to GP Bank Account' : 'Awaiting treasury records'}
           </div>
         </div>
 
@@ -110,10 +123,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 tracking-tight">
-            {formatCurrency(stats.totalExpenditure)}
+            {hasFinancialData && stats.totalExpenditure !== null ? formatCurrency(stats.totalExpenditure) : '—'}
           </p>
           <div className="text-[10px] text-slate-500 font-medium">
-            100% Verified Vouchers
+            {hasFinancialData ? '100% Verified Vouchers' : 'No vouchers recorded'}
           </div>
         </div>
 
@@ -125,10 +138,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p className="text-2xl font-bold text-emerald-700 tracking-tight">
-            {formatCurrency(stats.remainingBalance)}
+            {hasFinancialData && stats.remainingBalance !== null ? formatCurrency(stats.remainingBalance) : '—'}
           </p>
           <div className="text-[10px] text-slate-500 font-medium">
-            Available for Ongoing Works
+            {hasFinancialData ? 'Available for Ongoing Works' : 'Balance not available'}
           </div>
         </div>
 
@@ -294,22 +307,30 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
               {language === 'te' ? 'గ్రామ సర్పంచ్' : 'Sarpanch (Village Head)'}
             </span>
-            <h4 className="font-bold text-sm text-slate-900">{panchayat.sarpanch_name || 'K. Anjaiah'}</h4>
-            <p className="text-slate-600 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-slate-400" />
-              <span>{panchayat.sarpanch_phone || '+91 94401 23456'}</span>
-            </p>
+            <h4 className="font-bold text-sm text-slate-900">{panchayat.sarpanch_name || 'Not configured'}</h4>
+            {panchayat.sarpanch_phone ? (
+              <p className="text-slate-600 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-400" />
+                <span>{panchayat.sarpanch_phone}</span>
+              </p>
+            ) : (
+              <p className="text-slate-400 text-[11px]">Phone not provided</p>
+            )}
           </div>
 
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
               {language === 'te' ? 'పంచాయతీ కార్యదర్శి' : 'Panchayat Secretary'}
             </span>
-            <h4 className="font-bold text-sm text-slate-900">{panchayat.secretary_name || 'M. Srinivas'}</h4>
-            <p className="text-slate-600 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-slate-400" />
-              <span>{panchayat.secretary_phone || '+91 98480 76543'}</span>
-            </p>
+            <h4 className="font-bold text-sm text-slate-900">{panchayat.secretary_name || 'Not configured'}</h4>
+            {panchayat.secretary_phone ? (
+              <p className="text-slate-600 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-400" />
+                <span>{panchayat.secretary_phone}</span>
+              </p>
+            ) : (
+              <p className="text-slate-400 text-[11px]">Phone not provided</p>
+            )}
           </div>
 
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
@@ -317,7 +338,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigate }) => {
               {language === 'te' ? 'కార్యాలయ చిరునామా' : 'Gram Panchayat Office'}
             </span>
             <p className="text-slate-700 leading-relaxed">
-              {panchayat.office_address || 'Gram Panchayat Office, Main Road, Sriramnagar Village, Jagityal Dist, Telangana 505531'}
+              {panchayat.office_address || 'Panchayat office address pending upload.'}
             </p>
             {panchayat.contact_email && (
               <p className="text-slate-500 font-mono text-[11px]">
