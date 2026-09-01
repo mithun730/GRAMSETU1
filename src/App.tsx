@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PanchayatProvider, usePanchayat } from './context/PanchayatContext';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
+import { SignIn } from './components/SignIn';
+import { SignUp } from './components/SignUp';
 import { VillagerTab, AuthorityTab, AdminTab } from './types';
 
 // Villager Portal Views
@@ -38,6 +40,22 @@ const MainApp: React.FC = () => {
   const { language, t } = useLanguage();
   const { panchayat } = usePanchayat();
 
+  // Current route state for simple path routing
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+  };
+
   // Role perspective view (allows role switching)
   const [activeRoleView, setActiveRoleView] = useState<'villager' | 'authority' | 'admin'>('villager');
 
@@ -45,6 +63,56 @@ const MainApp: React.FC = () => {
   const [villagerTab, setVillagerTab] = useState<VillagerTab>('overview');
   const [authorityTab, setAuthorityTab] = useState<AuthorityTab>('overview');
   const [adminTab, setAdminTab] = useState<AdminTab>('users');
+
+  // If visiting /signin page directly
+  if (currentPath === '/signin') {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
+        <div className="mb-6 text-center">
+          <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl mx-auto mb-2 shadow-xs">
+            GS
+          </div>
+          <h1 className="text-xl font-bold text-slate-900">Gram Setu Digital Panchayat</h1>
+          <p className="text-xs text-slate-500">Government of Telangana</p>
+        </div>
+        <SignIn
+          onSuccess={() => navigateTo('/')}
+          onNavigateToSignUp={() => navigateTo('/signup')}
+        />
+        <button
+          onClick={() => navigateTo('/')}
+          className="mt-6 text-xs text-slate-500 hover:text-slate-800 underline font-medium"
+        >
+          &larr; Return to Home Page
+        </button>
+      </div>
+    );
+  }
+
+  // If visiting /signup page directly
+  if (currentPath === '/signup') {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
+        <div className="mb-6 text-center">
+          <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl mx-auto mb-2 shadow-xs">
+            GS
+          </div>
+          <h1 className="text-xl font-bold text-slate-900">Gram Setu Digital Panchayat</h1>
+          <p className="text-xs text-slate-500">Government of Telangana</p>
+        </div>
+        <SignUp
+          onSuccess={() => navigateTo('/')}
+          onNavigateToSignIn={() => navigateTo('/signin')}
+        />
+        <button
+          onClick={() => navigateTo('/')}
+          className="mt-6 text-xs text-slate-500 hover:text-slate-800 underline font-medium"
+        >
+          &larr; Return to Home Page
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 antialiased selection:bg-emerald-100 selection:text-emerald-900">
