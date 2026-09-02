@@ -55,7 +55,7 @@ const MainApp: React.FC = () => {
 
   const navigateTo = (path: string) => {
     window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    setCurrentPath(path.split('?')[0]);
   };
 
   // Role perspective view (allows role switching)

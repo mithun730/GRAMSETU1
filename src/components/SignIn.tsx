@@ -1,18 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { LogIn, AlertCircle, Shield, CheckCircle2, ArrowRight } from 'lucide-react';
+import { LogIn, AlertCircle, Shield, CheckCircle2, ArrowRight, MailCheck } from 'lucide-react';
 
 interface SignInProps {
   onSuccess?: () => void;
   onNavigateToSignUp?: () => void;
+  initialEmail?: string;
+  registeredSuccess?: boolean;
 }
 
-export const SignIn: React.FC<SignInProps> = ({ onSuccess, onNavigateToSignUp }) => {
+export const SignIn: React.FC<SignInProps> = ({ 
+  onSuccess, 
+  onNavigateToSignUp,
+  initialEmail,
+  registeredSuccess 
+}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [signupSuccessNotice, setSignupSuccessNotice] = useState<string | null>(null);
+
+  // Initialize and check query parameters or props for pre-filled email and signup success
+  useEffect(() => {
+    let emailToSet = initialEmail || '';
+    let isRegistered = Boolean(registeredSuccess);
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const queryEmail = params.get('email');
+      const queryRegistered = params.get('registered') === 'true' || params.get('signup') === 'success';
+
+      if (queryEmail && !emailToSet) {
+        emailToSet = queryEmail;
+      }
+      if (queryRegistered) {
+        isRegistered = true;
+      }
+    }
+
+    if (emailToSet) {
+      setEmail(emailToSet);
+    }
+
+    if (isRegistered) {
+      setSignupSuccessNotice(
+        'Your account has been created. Please check your email and verify your address before logging in.'
+      );
+    }
+  }, [initialEmail, registeredSuccess]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +101,19 @@ export const SignIn: React.FC<SignInProps> = ({ onSuccess, onNavigateToSignUp })
 
       {/* Form */}
       <form onSubmit={handleSignIn} className="p-6 space-y-4">
+        {/* Post-signup confirmation notice */}
+        {signupSuccessNotice && (
+          <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs space-y-1">
+            <div className="flex items-center gap-2 font-bold text-emerald-800">
+              <MailCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Registration Successful</span>
+            </div>
+            <p className="text-emerald-800 font-medium leading-relaxed">
+              {signupSuccessNotice}
+            </p>
+          </div>
+        )}
+
         {success && (
           <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
