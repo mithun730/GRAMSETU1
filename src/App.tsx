@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PanchayatProvider, usePanchayat } from './context/PanchayatContext';
+import { supabase } from './supabaseClient';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
 import { SignIn } from './components/SignIn';
@@ -60,13 +61,40 @@ const MainApp: React.FC = () => {
   // Role perspective view (allows role switching)
   const [activeRoleView, setActiveRoleView] = useState<'villager' | 'authority' | 'admin'>('villager');
 
+  // Protect private pages with supabase.auth.getSession() — if no session, redirect to /login
+  useEffect(() => {
+    const verifySessionForRoute = async () => {
+      const isPrivateRoute = 
+        currentPath.startsWith('/admin') ||
+        currentPath.startsWith('/authority') ||
+        currentPath.startsWith('/private') ||
+        currentPath.startsWith('/dashboard') ||
+        currentPath.startsWith('/manage') ||
+        currentPath.startsWith('/settings') ||
+        activeRoleView === 'authority' ||
+        activeRoleView === 'admin';
+
+      if (isPrivateRoute) {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          if (activeRoleView !== 'villager') {
+            setActiveRoleView('villager');
+          }
+          navigateTo('/login');
+        }
+      }
+    };
+
+    verifySessionForRoute();
+  }, [currentPath, activeRoleView]);
+
   // Sub-tabs
   const [villagerTab, setVillagerTab] = useState<VillagerTab>('overview');
   const [authorityTab, setAuthorityTab] = useState<AuthorityTab>('overview');
   const [adminTab, setAdminTab] = useState<AdminTab>('data_import');
 
-  // If visiting /signin page directly
-  if (currentPath === '/signin') {
+  // If visiting /login or /signin page directly
+  if (currentPath === '/login' || currentPath === '/signin') {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
         <div className="mb-6 text-center">
@@ -103,7 +131,7 @@ const MainApp: React.FC = () => {
         </div>
         <SignUp
           onSuccess={() => navigateTo('/')}
-          onNavigateToSignIn={() => navigateTo('/signin')}
+          onNavigateToSignIn={() => navigateTo('/login')}
         />
         <button
           onClick={() => navigateTo('/')}

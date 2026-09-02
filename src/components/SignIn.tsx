@@ -27,7 +27,8 @@ export const SignIn: React.FC<SignInProps> = ({ onSuccess, onNavigateToSignUp })
 
       if (signInError) {
         setError(signInError.message);
-      } else {
+      } else if (data.session) {
+        // Only redirect when a real session exists after login
         setSuccess(true);
         if (onSuccess) {
           onSuccess();
@@ -36,6 +37,8 @@ export const SignIn: React.FC<SignInProps> = ({ onSuccess, onNavigateToSignUp })
         if (window.location.pathname !== '/') {
           window.history.pushState({}, '', '/');
         }
+      } else {
+        setError('No active session found. Please check your credentials or confirm your email.');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred during sign in.');

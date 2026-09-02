@@ -32,36 +32,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
     try {
       if (mode === 'signin') {
-        // 2) For Sign In: Use supabase.auth.signInWithPassword({ email, password })
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         });
 
         if (error) {
           setErrorMsg(error.message);
-        } else {
+        } else if (data.session) {
           setSuccessMsg(language === 'te' ? 'విజయవంతంగా లాగిన్ అయ్యారు!' : 'Logged in successfully!');
-          // 3) Redirect the user to the Home page ("/")
           if (window.location.pathname !== '/') {
             window.history.pushState({}, '', '/');
           }
           setTimeout(() => {
             onClose();
           }, 800);
+        } else {
+          setErrorMsg('No active session found. Please check your credentials or confirm your email.');
         }
       } else if (mode === 'signup') {
-        // 1) For Sign Up: Use supabase.auth.signUp({ email, password })
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
         });
 
         if (error) {
           setErrorMsg(error.message);
+        } else if (!data.session) {
+          // If session is null, do NOT redirect or close modal. Just show confirmation message.
+          setSuccessMsg(language === 'te' 
+            ? 'ఖాతా ధృవీకరణ కోసం మీ ఈమెయిల్‌ను తనిఖీ చేసి, లాగిన్ చేయడానికి ముందు మీ ఖాతాను నిర్ధారించండి.' 
+            : 'Check your email and confirm your account before logging in.');
         } else {
-          setSuccessMsg(language === 'te' ? 'ఖాతా విజయవంతంగా సృష్టించబడింది!' : 'Account registered successfully!');
-          // 3) Redirect the user to the Home page ("/")
+          // Real session exists
+          setSuccessMsg(language === 'te' ? 'ఖాతా విజయవంతంగా సృష్టించబడింది!' : 'Account registered and logged in successfully!');
           if (window.location.pathname !== '/') {
             window.history.pushState({}, '', '/');
           }

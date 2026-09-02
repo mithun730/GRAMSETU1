@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
 import { VillagerTab, AuthorityTab, AdminTab } from '../types';
 
 interface NavigationProps {
@@ -43,6 +44,18 @@ export const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const { t, language } = useLanguage();
   const { role, isAuthenticated } = useAuth();
+
+  const handleRoleChange = async (targetRole: 'villager' | 'authority' | 'admin') => {
+    if (targetRole === 'authority' || targetRole === 'admin') {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.history.pushState({}, '', '/login');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        return;
+      }
+    }
+    setActiveRoleView(targetRole);
+  };
 
   const villagerTabs: { id: VillagerTab; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'overview', label: t.nav.overview, icon: LayoutDashboard },
@@ -82,7 +95,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-full border border-slate-200">
             <button
-              onClick={() => setActiveRoleView('villager')}
+              onClick={() => handleRoleChange('villager')}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeRoleView === 'villager'
                   ? 'bg-white text-slate-900 shadow-xs font-bold'
@@ -94,7 +107,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             </button>
 
             <button
-              onClick={() => setActiveRoleView('authority')}
+              onClick={() => handleRoleChange('authority')}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeRoleView === 'authority'
                   ? 'bg-white text-slate-900 shadow-xs font-bold'
@@ -106,7 +119,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             </button>
 
             <button
-              onClick={() => setActiveRoleView('admin')}
+              onClick={() => handleRoleChange('admin')}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeRoleView === 'admin'
                   ? 'bg-slate-900 text-white shadow-xs font-bold'
